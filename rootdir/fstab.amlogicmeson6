@@ -1,0 +1,7 @@
+#<src>					<mnt_point>		<type>		<mnt_flags and options>		<fs_mgr_flags>
+/dev/block/system		/system			ext4		ro,seclabel,relatime,nodiscard,data=ordered					defaults
+/dev/block/mtdblock6			/factory		ext4		rw,seclabel,relatime,nodiscard,data=ordered								defaults
+/dev/block/data			/data			ext4		rw,seclabel,relatime,nodiscard,data=ordered									defaults
+/dev/block/cache		/cache			ext4		rw,seclabel,relatime,nodiscard,data=ordered									defaults
+/dev/block/media		/internal_sd			ext4		rw,seclabel,relatime,nodiscard,data=ordered									defaults
+/dev/block/mmcblk0p1		/external_sd			vfat		defaults									defaults

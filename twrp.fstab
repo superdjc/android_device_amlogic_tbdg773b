@@ -1,0 +1,12 @@
+# mount point	fstype 	device	options
+/system	ext4	/dev/block/system	flags=backup=1;canbewiped;wipeingui
+/factory	ext4	/dev/block/mtdblock6	
+/data	ext4	/dev/block/data	flags=backup=1;canbewiped;wipeingui;wipeduringfactoryreset
+/cache	ext4	/dev/block/cache	flags=backup=1;canbewiped;wipeingui;wipeduringfactoryreset
+/internal_sd	ext4	/dev/block/media	
+/external_sd	vfat	/dev/block/mmcblk0p1	flags=display="Micro SDCard";storage;wipeingui;removable
+/bootloader	mtd	bootloader	
+/logo	mtd	logo	
+/aml_logo	mtd	aml_logo	
+/recovery	mtd	recovery	
+/boot	mtd	boot	

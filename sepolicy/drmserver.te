@@ -1,0 +1,2 @@
+allow drmserver cpuctl_device:dir create_dir_perms;
+

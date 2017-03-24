@@ -1,0 +1,490 @@
+on early-init
+write /sys/class/aml_keys/aml_keys/version nand3
+symlink /initlogo.rle.bak /initlogo.rle
+
+on init
+loglevel 7
+
+mkdir /system
+mkdir /data 0771 system system
+mkdir /cache 0770 system cache
+mkdir /config 0500 root root
+mkdir /factory 0771 system system
+
+# Setup the global environment
+export LD_LIBRARY_PATH /vendor/lib:/system/lib
+export EXTERNAL_STORAGE /external_sd
+export INTERNAL_STORAGE /internal_sd
+
+# create directory for mounting usb drives
+mkdir /mnt/usbdrive 0666 system system
+symlink /mnt/usbdrive /usbdrive
+
+write /dev/cpuctl/cpu.rt_runtime_us 950000
+
+mkdir /internal_sd
+mkdir /external_sd
+mkdir /dev/cpuctl/apps
+chown system system /dev/cpuctl/apps/tasks
+chmod 0666 /dev/cpuctl/apps/tasks
+write /dev/cpuctl/apps/cpu.shares 1024
+write /dev/cpuctl/apps/cpu.rt_runtime_us 800000
+write /dev/cpuctl/apps/cpu.rt_period_us 1000000
+
+# Make /system/etc/firmware writable for easier upgrade/install
+mkdir /system/etc/firmware
+chmod 0666 /system/etc/firmware
+
+on fs
+setprop ro.crypto.umount_sd false
+
+mount ext4 /dev/block/mtdblock6 /factory nosuid nodev
+mount ext4 /dev/block/system /system ro  noatime nodiratime noauto_da_alloc                   
+mount ext4 /dev/block/data /data  noatime nodiratime norelatime  nosuid  nodev noauto_da_alloc
+mount ext4 /dev/block/cache /cache  noatime nodiratime norelatime  nosuid nodev noauto_da_alloc	
+mount ext4 /dev/block/media /storage/sdcard0  noatime nodiratime norelatime  nosuid nodev noauto_da_alloc	
+
+write /sys/class/graphics/fb0/blank 0
+write /sys/class/graphics/fb1/blank 1
+
+insmod /system/lib/modules/ump.ko ump_debug_level=2
+insmod /system/lib/modules/mali.ko mali_debug_level=2
+chmod 0666 /dev/mali
+chmod 0666 /dev/ump
+
+on post-fs
+
+# For 3G Dongle
+mount usbfs none /proc/bus/usb
+
+# for CTS requirement
+chmod 0600 /system/etc/hosts
+chmod 0664 /sys/devices/i2c-2/2-004c/input/input4/enable
+chmod 0664 /sys/devices/i2c-1/1-0021/sp0a19
+chmod 0664 /sys/devices/i2c-2/2-004c/input/input4/delay
+
+on post-fs-data
+mkdir /system/etc/stk831x_cali 0777 system system
+
+# Give system access to wpa_supplicant.conf for backup and restore
+chmod 0770 /system/etc/wifi
+chown wifi wifi /system/etc/wifi
+chown wifi wifi /system/etc/wifi/sockets
+chown wifi wifi /system/etc/wifi/wpa_supplicant.conf
+
+mkdir /data/local 0751 root root
+mkdir /data/ssh 0750 root shell
+mkdir /data/ssh/empty 0700 root root
+
+chown system system /sys/class/android_usb/android0/f_mass_storage/lun0/file
+chmod 0660 /sys/class/android_usb/android0/f_mass_storage/lun0/file
+chown system system /sys/class/android_usb/android0/f_mass_storage/lun1/file
+chmod 0660 /sys/class/android_usb/android0/f_mass_storage/lun1/file
+chown system system /sys/class/android_usb/android0/f_rndis/ethaddr
+chmod 0660 /sys/class/android_usb/android0/f_rndis/ethaddr
+
+mkdir /dev/console
+
+on boot
+setprop wifi.interface wlan0
+# Basic network init
+ifup lo
+hostname localhost
+domainname localdomain
+
+chmod 0777 /dev/stk831x 
+chmod 0666 /system/etc/stk831x_cali/stkacccali.conf 
+chmod 0666 /sys/class/input/input5/enable 
+chmod 0666 /sys/class/input/input5/cali 
+chmod 0666 /sys/class/input/input5/delay
+
+# Create dhcpcd dir
+mkdir /system/etc/dhcp 0770 dhcp dhcp
+chmod 0770 /system/etc/dhcp
+
+# Define for Alsa
+#setprop alsa.mixer.playback.master Digital
+setprop alsa.mixer.capture.master Digital
+#setprop alsa.mixer.playback.headset Digital
+setprop alsa.mixer.capture.headset Digital
+#setprop alsa.mixer.playback.earpiece Digital
+setprop alsa.mixer.capture.earpiece Digital
+#setprop alsa.mixer.playback.speaker Digital
+
+# Permissions for System Server and daemons.
+chown system system /sys/class/timed_output/vibrator/enable
+chown system system /sys/class/timed_output/vibrator/enable
+chown system system /sys/module/sco/parameters/disable_esco
+chown system system /sys/kernel/ipv4/tcp_wmem_min
+chown system system /sys/kernel/ipv4/tcp_wmem_def
+chown system system /sys/kernel/ipv4/tcp_wmem_max
+chown system system /sys/kernel/ipv4/tcp_rmem_min
+chown system system /sys/kernel/ipv4/tcp_rmem_def
+chown system system /sys/kernel/ipv4/tcp_rmem_max
+chown root radio /proc/cmdline
+
+chown media system /sys/class/tsync/pts_video
+chown media system /sys/class/tsync/pts_audio
+chown media system /sys/class/tsync/pts_pcrscr
+chown media system /sys/class/tsync/event
+chown media system /sys/class/tsync/mode
+chown media system /sys/class/tsync/enable
+chown media system /sys/class/tsync/av_threshold_min
+chown media system /sys/class/tsync/av_threshold_max
+chown media system /sys/class/graphics/fb0/blank
+chown media system /sys/class/graphics/fb1/blank
+chown media system /sys/class/graphics/fb0/enable_key
+chown media system /sys/class/graphics/fb0/enable_key_onhold
+chmod 0664 /sys/class/tsync/pts_video
+chmod 0664 /sys/class/tsync/pts_audio
+chmod 0664 /sys/class/tsync/pts_pcrscr
+chmod 0664 /sys/class/tsync/event
+chmod 0664 /sys/class/tsync/mode
+chmod 0664 /sys/class/tsync/enable
+chmod 0664 /sys/class/tsync/av_threshold_min
+chmod 0664 /sys/class/tsync/av_threshold_max
+chmod 0664 /sys/class/graphics/fb0/blank
+chmod 0664 /sys/class/graphics/fb1/blank
+chmod 0664 /sys/class/graphics/fb0/enable_key
+chmod 0664 /sys/class/graphics/fb0/enable_key_onhold
+
+chown media system /sys/class/video/blackout_policy
+chown media system /sys/class/video/screen_mode
+chown media system /sys/class/video/axis
+chown media system /sys/class/video/disable_video
+chown media system /sys/class/video/zoom
+chown media system /sys/class/ppmgr/angle
+chown media system /sys/class/ppmgr/ppscaler
+chown media system /sys/class/ppmgr/ppscaler_rect
+chown media system /sys/class/ppmgr/vtarget
+chmod 0664 /sys/class/video/blackout_policy
+chmod 0664 /sys/class/video/screen_mode
+chmod 0664 /sys/class/video/axis
+chmod 0664 /sys/class/video/disable_video
+chmod 0664 /sys/class/video/zoom
+chmod 0664 /sys/class/ppmgr/angle
+chmod 0664 /sys/class/ppmgr/ppscaler
+chmod 0664 /sys/class/ppmgr/ppscaler_rect
+chmod 0664 /sys/class/ppmgr/vtarget
+
+chmod 0666 /dev/amstream_sub_read
+
+chown system system /sys/class/subtitle/enable
+chown system system /sys/class/subtitle/total
+chown system system /sys/class/subtitle/width
+chown system system /sys/class/subtitle/height
+chown system system /sys/class/subtitle/type
+chown system system /sys/class/subtitle/curr
+chown system system /sys/class/subtitle/size
+chown system system /sys/class/subtitle/data
+chown system system /sys/class/subtitle/startpts
+chown system system /sys/class/subtitle/fps
+chown system system /sys/class/subtitle/subtype
+chown media system /sys/class/audiodsp/codec_fatal_err
+chmod 0664 /sys/class/audiodsp/codec_fatal_err
+chmod 0664 /sys/class/subtitle/enable
+chmod 0664 /sys/class/subtitle/total
+chmod 0664 /sys/class/subtitle/width
+chmod 0664 /sys/class/subtitle/height
+chmod 0664 /sys/class/subtitle/type
+chmod 0664 /sys/class/subtitle/curr
+chmod 0664 /sys/class/subtitle/size
+chmod 0664 /sys/class/subtitle/data
+chmod 0664 /sys/class/subtitle/startpts
+chmod 0664 /sys/class/subtitle/fps
+chmod 0664 /sys/class/subtitle/subtype
+
+# chmod
+# HDMI/LCD switch
+chown system system /sys/class/display/mode
+chown media system /sys/class/display/axis
+chown system system /sys/class/graphics/fb0/scale
+chown system system /sys/class/graphics/fb1/scale
+chown system system /sys/class/graphics/fb0/scale_axis
+chown system system /sys/class/graphics/fb1/scale_axis
+chown system system /sys/class/amhdmitx/amhdmitx0/disp_mode
+chmod 0664 /sys/class/display/mode
+chmod 0664 /sys/class/display/axis
+chmod 0664 /sys/class/graphics/fb0/scale
+chmod 0664 /sys/class/graphics/fb1/scale
+chmod 0664 /sys/class/amhdmitx/amhdmitx0/disp_mode
+
+
+#for cts pass	
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo2/min_microvolts
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo2/max_microvolts
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo2/min_microamps
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo2/max_microamps
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo2/mode
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo3/min_microvolts
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo3/max_microvolts
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo3/min_microamps
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo3/max_microamps
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo3/mode
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo4/min_microvolts
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo4/max_microvolts
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo4/min_microamps
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo4/max_microamps
+chmod 0664 /sys/devices/platform/reg-20-cs-ldo4/mode
+chmod 0664 /sys/devices/platform/reg-20-cs-buck2/min_microvolts
+chmod 0664 /sys/devices/platform/reg-20-cs-buck2/max_microvolts
+chmod 0664 /sys/devices/platform/reg-20-cs-buck2/min_microamps
+chmod 0664 /sys/devices/platform/reg-20-cs-buck2/max_microamps
+chmod 0664 /sys/devices/platform/reg-20-cs-buck2/mode
+chmod 0664 /sys/devices/platform/reg-20-cs-buck3/min_microvolts
+chmod 0664 /sys/devices/platform/reg-20-cs-buck3/max_microvolts
+chmod 0664 /sys/devices/platform/reg-20-cs-buck3/min_microamps
+chmod 0664 /sys/devices/platform/reg-20-cs-buck3/max_microamps
+chmod 0664 /sys/devices/platform/reg-20-cs-buck3/mode
+chmod 0664 /sys/devices/platform/reg-20-cs-ldoio0/min_microvolts
+chmod 0664 /sys/devices/platform/reg-20-cs-ldoio0/max_microvolts
+chmod 0664 /sys/devices/platform/reg-20-cs-ldoio0/min_microamps
+chmod 0664 /sys/devices/platform/reg-20-cs-ldoio0/max_microamps
+chmod 0664 /sys/devices/platform/reg-20-cs-ldoio0/mode
+chmod 0664 /sys/devices/i2c-0/0-0034/axp20-gpio.29/gpio
+chmod 0664 /sys/devices/i2c-0/0-0034/axp20-gpio.29/io
+chmod 0664 /sys/devices/i2c-0/0-0034/axp20-gpio.29/value
+chmod 0664 /sys/class/tsync/discontinue
+chmod 0664 /sys/class/saradc/saradc_print_flag
+chmod 0664 /sys/class/saradc/saradc_temperature
+chmod 0664 /sys/class/vm/attr0
+chmod 0664 /sys/class/vm/attr1
+chmod 0664 /sys/class/vm/attr2
+chmod 0664 /sys/class/vm/mirror
+chmod 0664 /sys/class/multi_tp/multi_tp_type
+chown media system /sys/class/graphics/fb0/block_mode
+chmod 0664 /sys/class/graphics/fb0/block_mode
+chmod 0664 /sys/devices/i2c-2/2-001a/wm8960
+chmod 0664 /sys/devices/i2c-1/1-0022/sp0a19
+
+# Dual display
+chown system system /sys/class/display2/mode
+chown system system /sys/class/display2/axis
+chown system system /sys/class/video2/clone
+chown media system /sys/class/vfm/map
+chown system system /sys/module/amvideo2/parameters/clone_frame_scale_width
+chown system system /sys/module/amvideo2/parameters/clone_frame_rate
+chown system system /sys/class/video2/screen_mode
+chown system system /sys/class/video2/zoom
+chmod 0664 /sys/class/display2/mode
+chmod 0664 /sys/class/display2/axis
+chmod 0664 /sys/class/video2/clone
+chmod 0664 /sys/class/vfm/map
+chmod 0664 /sys/module/amvideo2/parameters/clone_frame_scale_width
+chmod 0664 /sys/module/amvideo2/parameters/clone_frame_rate
+chmod 0664 /sys/class/video2/screen_mode
+chmod 0664 /sys/class/video2/zoom
+
+chown system system /sys/class/graphics/fb2/blank
+chown system system /sys/class/graphics/fb2/clone
+chown system system /sys/class/display2/venc_mux
+chmod 0664 /sys/class/graphics/fb2/blank
+chmod 0664 /sys/class/graphics/fb2/clone
+chmod 0664 /sys/class/display2/venc_mux
+
+# Free scale
+chown system system /sys/class/graphics/fb0/free_scale
+chown system system /sys/class/graphics/fb0/scale_width
+chown system system /sys/class/graphics/fb0/scale_height
+chown system system /sys/class/graphics/fb1/free_scale
+chown system system /sys/class/graphics/fb1/scale_width
+chown system system /sys/class/graphics/fb1/scale_height
+chown media system /sys/class/graphics/fb0/request2XScale
+chmod 0664 /sys/class/graphics/fb0/free_scale
+chmod 0664 /sys/class/graphics/fb0/scale_width
+chmod 0664 /sys/class/graphics/fb0/scale_height
+chmod 0664 /sys/class/graphics/fb1/free_scale
+chmod 0664 /sys/class/graphics/fb1/scale_width
+chmod 0664 /sys/class/graphics/fb1/scale_height
+chmod 0664 /sys/class/graphics/fb0/request2XScale
+chmod 0664 /sys/devices/platform/soc-audio/codec_reg
+
+# 3G dongle
+chmod 0666 /dev/ttyS20
+
+# Backlight control
+chmod 0664 /sys/class/backlight/aml-bl/brightness
+chown system system /sys/class/backlight/aml-bl/brightness
+
+# CPU scaling
+chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+chown system system /sys/devices/system/cpu/cpufreq/conservative/freq_step
+
+chown system system /sys/devices/system/cpu/cpufreq/performance2/sampling_rate
+chown system system /sys/devices/system/cpu/cpufreq/performance2/down_threshold
+chown system system /sys/devices/system/cpu/cpufreq/performance2/up_threshold
+chown system system /sys/devices/system/cpu/cpufreq/conservative/sampling_rate
+chown system system /sys/devices/system/cpu/cpufreq/conservative/down_threshold
+chown system system /sys/devices/system/cpu/cpufreq/conservative/up_threshold
+chown system system /sys/class/mali_freq/max
+chown system system /sys/class/freq_limit/limit
+chown system system /sys/devices/system/cpu/cpu1/online
+
+chmod 664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+chmod 664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+chmod 664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+chmod 664 /sys/devices/system/cpu/cpufreq/conservative/freq_step
+chmod 664 /sys/devices/system/cpu/cpufreq/performance2/sampling_rate
+chmod 664 /sys/devices/system/cpu/cpufreq/performance2/down_threshold
+chmod 664 /sys/devices/system/cpu/cpufreq/performance2/up_threshold
+chmod 664 /sys/devices/system/cpu/cpufreq/conservative/sampling_rate
+chmod 664 /sys/devices/system/cpu/cpufreq/conservative/down_threshold
+chmod 664 /sys/devices/system/cpu/cpufreq/conservative/up_threshold
+chmod 664 /sys/class/mali_freq/max
+chmod 664 /sys/class/freq_limit/limit
+chmod 664 /sys/devices/system/cpu/cpu1/online
+
+
+write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1200000
+write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 96000
+write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor conservative
+write /sys/class/freq_limit/limit 0
+write /sys/devices/system/cpu/cpufreq/conservative/freq_step 8
+write /sys/devices/system/cpu/cpufreq/conservative/sampling_rate 100000
+write /sys/devices/system/cpu/cpufreq/conservative/up_threshold 80
+write /sys/devices/system/cpu/cpufreq/conservative/down_threshold 50
+
+# GPS com and pesudo com ports
+symlink /dev/ttyS1 /dev/ttyS10
+
+chown system system /sys/devices/system/clocksource/clocksource0/current_clocksource
+
+# G-Sensors
+chmod 0666 /dev/mpu
+chmod 0666 /dev/mpuirq
+chmod 0666 /dev/timerirq
+
+chmod 0664 /sys/devices/i2c-0/0-0034/axp20-gpio.29/value
+chmod 0664 /sys/devices/i2c-0/0-0034/axp20-gpio.29/io
+chmod 0664 /sys/devices/i2c-0/0-0034/axp20-gpio.29/gpio
+
+# usbpm
+chown system system /sys/devices/lm0/peri_power
+chown system system /sys/devices/lm0/peri_otg_disable
+
+# Define TCP buffer sizes for various networks
+# ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
+setprop net.tcp.buffersize.default 4096,87380,110208,4096,16384,110208
+setprop net.tcp.buffersize.wifi    524288,1048576,2097152,262144,524288,1048576
+setprop net.tcp.buffersize.lte     524288,1048576,2097152,262144,524288,1048576
+setprop net.tcp.buffersize.umts    4094,87380,110208,4096,16384,110208
+setprop net.tcp.buffersize.hspa    4094,87380,262144,4096,16384,262144
+setprop net.tcp.buffersize.edge    4093,26280,35040,4096,16384,35040
+setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
+
+on property:init.svc.bootanim=stopped
+write /sys/class/aml_mod/mod_off mipi
+write /sys/class/aml_mod/mod_off spi
+write /sys/class/aml_mod/mod_off venc
+write /sys/class/aml_mod/mod_off bt656
+write /sys/class/aml_mod/mod_off vdec
+write /sys/class/aml_mod/mod_off random_num_gen
+write /sys/class/aml_mod/mod_off tcon
+write /sys/class/aml_mod/mod_off ethernet
+write /sys/class/aml_mod/mod_off smart_card
+write /sys/class/aml_mod/mod_off sdhc
+write /sys/class/aml_mod/mod_off stream
+write /sys/class/aml_mod/mod_off blk_mov
+write /sys/class/aml_mod/mod_off dvin
+write /sys/class/aml_mod/mod_off rdma
+write /sys/class/aml_mod/mod_off ge2d
+
+write /sys/class/aml_mod/dynamical_control vdec
+write /sys/class/aml_mod/dynamical_control bt656
+write /sys/class/aml_mod/dynamical_control lvds
+write /sys/class/aml_mod/dynamical_control venc
+write /sys/class/aml_mod/dynamical_control ge2d
+
+# This property trigger has added to imitiate the previous behavior of "adb root".
+# The adb gadget driver used to reset the USB bus when the adbd daemon exited,
+# and the host side adb relied on this behavior to force it to reconnect with the
+# new adbd instance after init relaunches it. So now we force the USB bus to reset
+# here when adbd sets the service.adb.root property to 1.  We also restart adbd here
+# rather than waiting for init to notice its death and restarting it so the timing
+# of USB resetting and adb restarting more closely matches the previous behavior.
+on property:service.adb.root=1
+write /sys/class/android_usb/android0/enable 0
+restart adbd
+write /sys/class/android_usb/android0/enable 1
+
+service ril-daemon /system/bin/rild -l /system/lib/libaml-ril.so
+class main
+socket rild stream 660 root radio
+socket rild-debug stream 660 radio system
+user root
+group radio cache inet misc audio sdcard_rw log
+disabled
+
+on property:hw.nophone=true
+stop ril-daemon
+
+on property:hw.nophone=false
+start ril-daemon
+
+service dhcpcd_wlan0 /system/bin/dhcpcd -ABKL
+class main
+group dhcp system
+disabled
+oneshot
+
+service dhcpcd_p2p /system/bin/dhcpcd -ABKL
+class main
+group dhcp system
+disabled
+oneshot
+
+service dhcpcd_usbnet0 /system/bin/dhcpcd -ABKL
+class main
+group dhcp system
+disabled
+oneshot
+
+service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL
+class main
+group dhcp system
+disabled
+oneshot
+
+service iprenew_wlan0 /system/bin/dhcpcd -n
+class main
+disabled
+oneshot
+
+service iprenew_p2p /system/bin/dhcpcd -n
+class main
+disabled
+oneshot
+
+service iprenew_bnep0 /system/bin/dhcpcd -n
+class main
+disabled
+oneshot
+
+service audio /system/bin/alsa_ctl restore
+class core
+group system audio
+oneshot
+
+service usbpm /system/bin/usbtestpm
+user system
+disabled
+
+on property:dev.bootcomplete=1
+chown media media /sys/class/vm/mirror
+chmod 777 /dev/video0
+chown system system /sys/devices/lm0/peri_power
+chown system system /sys/devices/lm0/peri_otg_disable    
+chmod 0664 /sys/class/vm/mirror
+mkdir /cache/recovery
+chown system cache /cache/recovery
+chmod 0770 /cache/recovery
+write /sys/class/vm/mirror 0
+chmod 0664 /sys/class/ppmgr/vtarget
+chmod 664 /dev/video10
+chmod 0664 /sys/class/vfm/map
+chown media media /sys/class/ppmgr/vtarget
+chown media media /dev/video10
+chown media media /sys/class/vfm/map
+start usbpm

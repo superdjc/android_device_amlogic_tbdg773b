@@ -1,0 +1,14 @@
+[
+  {
+    "remote":       "github",
+    "repository":   "superdjc/android_device_amlogic_tbdg773",
+    "target_path":  "device/amlogic/tbdg773b",
+    "revision":     "master"
+  },
+  {
+    "remote":       "github",
+    "repository":   "superdjc/android_kernel_amlogic_kernel",
+    "target_path":  "kernel/amlogic",
+    "revision":     "master"
+  }
+]

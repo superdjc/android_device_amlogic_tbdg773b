@@ -1,0 +1,136 @@
+#
+# system.prop for tbdg773b
+#
+# system.prop for M1 reference board
+# This overrides settings in the products/generic/system.prop file
+#
+#rild.libpath=/system/lib/libreference-ril.so
+#rild.libargs=-d /dev/ttyS0
+ro.sf.lcd_density=160
+keyguard.no_require_sim=1
+keyguard.enable=true
+ro.statusbar.widget=true
+ro.statusbar.button=true
+ro.statusbar.yearmonthdayweek=true
+
+dalvik.vm.heapstartsize=5m
+dalvik.vm.heapgrowthlimit=48m
+dalvik.vm.heapsize=256m
+
+hwui.render_dirty_regions=false
+
+# Disable un-supported Android feature
+hw.nopm=false
+hw.nobattery=false
+hw.nophone=false
+hw.novibrate=true
+hw.cameras=1
+hw.hasethernet=true
+ro.platform.has.touch=true
+hw.nodatausage=false
+ro.platform.has.sleeppolicy=false
+ro.sf.hwrotation=270
+ro.sf.gsensorposition=1
+ro.sf.ecompassposition=4
+allow_all_orientations=1
+
+# Use OSD2 mouse patch
+ro.ui.cursor=osd2
+
+ro.hardware=amlogic
+
+# Enable 32-bit OSD
+sys.fb.bits=32
+
+# Disable GPS
+gps.enable=false
+
+# Enable player buildin
+media.amsuperplayer.enable=true
+media.amplayer.enable-acodecs=asf,ape,flac,dts
+media.amplayer.enable=true
+media.amsuperplayer.m4aplayer=STAGEFRIGHT_PLAYER
+media.amsuperplayer.defplayer=PV_PLAYER
+media.amplayer.thumbnail=true
+#media.amplayer.widevineenable=true
+media.arm.audio.decoder=ape
+
+#reduce the time of loading online video
+media.libplayer.fastswitch=0
+media.amplayer.delaybuffering=1
+media.libplayer.ipv4only=1
+media.amplayer.stopbuflevel=0.05
+
+# Nand write need force sync when gadget
+gadget.nand.force_sync=true
+
+
+# Status bar customization
+ro.statusbar.widget.power=true
+ro.statusbar.yearmonthdayweek=true
+
+# HDMI
+ro.hdmi480p.enable=false
+
+#camera DCIM dir. 0:sd only; 1:nand only; 2,sd first
+ro.camera.dcim=1
+
+# Disable preload-class
+ro.amlogic.no.preloadclass=0
+
+# App optimization
+ro.app.optimization=true
+
+#Dual display
+ro.vout.dualdisplay3=true
+ro.vout.player.exit=false
+
+# CPU settings
+ro.has.cpu.setting=true
+
+# CPU freq customized in setting menu
+# normal, performance, powersaving
+ro.cpumode.maxfreq=1000000,1200000,800000
+
+# when usbstorage, CPU mode and freq
+ro.usbstorage.cpumode=performance
+ro.usbstorage.maxfreq=600000
+
+#used to set default surface size, set 1 when hwrotation is 270, set 3 when hwrotation is 90;need set ro.bootanimation.rotation 2
+#debug.default.dimention=1
+
+#support media poll uevent,can use sd cardread on usb port
+has.media.poll=true
+
+#used forward seek for libplayer
+media.libplayer.seek.fwdsearch=1
+
+#for tabletui display
+ro.ui.tabletui=true
+#enable address bar cover issue fixing
+ro.flashplayer.surfacehack=1
+
+#media partition name
+ro.media.partition.label=Zeki
+#add vol button in statusbar.
+ro.statusbar.volume=true
+
+#USB PID and VID name
+ro.usb.vendor.string=Tablet
+ro.usb.product.string=Android
+#CTS
+media.amplayer.widevineenable=true
+media.amplayer.dsource4local=1
+media.player.forcemp3softdec=true
+
+#display USBStorage in setup if plug in USB disk
+ro.screen.has.usbstorage=true
+#for compatible APP
+
+#recovery media label
+ro.media.partition.label=Tablet
+ro.config.ringtone=Safari.ogg
+
+#map volume
+ro.audio.mapvalue=0.5,0.8,0,0
+name=ABCDEF1234567890

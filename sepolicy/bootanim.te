@@ -1,0 +1,3 @@
+allow bootanim cpuctl_device:dir search;
+allow bootanim bootanim:process { execmem };
+allow bootanim gpu_device:chr_file create_file_perms;

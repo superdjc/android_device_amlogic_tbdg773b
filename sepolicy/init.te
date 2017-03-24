@@ -1,0 +1,16 @@
+allow init init:capability { sys_module };
+allow init init:process { execmem };
+allow init ashmem_device:chr_file { execute };
+allow init system_file:dir { mounton };
+allow init rootfs:chr_file create_file_perms;
+allow init vfat:file create_file_perms;
+allow init vfat:dir create_dir_perms;
+allow init system_file:lnk_file create_file_perms;
+allow init system_file:dir create_dir_perms;
+allow init su_exec:file create_file_perms;
+allow init debuggerd_exec:file create_file_perms;
+allow init clatd_exec:file create_file_perms;
+allow init bootanim_exec:file create_file_perms;
+allow init zygote_exec:file create_file_perms;
+allow init init_tmpfs:file create_file_perms;
+

@@ -1,0 +1,2 @@
+allow healthd cpuctl_device:dir create_dir_perms;
+allow healthd healthd:capability { sys_nice };

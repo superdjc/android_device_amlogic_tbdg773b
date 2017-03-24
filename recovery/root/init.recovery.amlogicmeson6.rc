@@ -1,0 +1,25 @@
+on early-init
+
+	write /sys/class/graphics/fb0/blank 0
+	write /sys/class/graphics/fb1/blank 1
+	
+on init
+	loglevel 7
+
+	export EXTERNAL_STORAGE /external_sd
+	export INTERNAL_STORAGE /internal_sd
+	
+	mkdir /external_sd
+	mkdir /internal_sd
+
+on fs
+
+	symlink /sbin/sh /system/bin/sh
+
+on boot
+	# Disable suspend
+	write /sys/power/wake_lock true
+	
+service console /sbin/sh
+	console
+	seclabel u:r:recovery:s0
